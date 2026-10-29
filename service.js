@@ -4,6 +4,7 @@ const http = require('http');
 
 const PORT = 8099;
 let state = { seq: 0, text: '', submit: false };
+let polls = { count: 0, last: 0, from: '' };
 
 const PAGE = `<!doctype html><meta name=viewport content="width=device-width,initial-scale=1">
 <body style="font:18px sans-serif;margin:16px">
@@ -33,9 +34,11 @@ http.createServer((req, res) => {
         return;
     }
     if (req.url === '/state') {
+        polls = { count: polls.count + 1, last: Date.now(), from: req.socket.remoteAddress };
         res.setHeader('Content-Type', 'application/json');
         return res.end(JSON.stringify(state));
     }
+    if (req.url === '/debug') return res.end(JSON.stringify({ polls, now: Date.now() }));
     res.setHeader('Content-Type', 'text/html');
     res.end(PAGE);
 }).listen(PORT, '0.0.0.0');
