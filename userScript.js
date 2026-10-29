@@ -26,7 +26,18 @@
             if (s.seq === seen) { bar.textContent = 'PhoneKB: connected'; return; }
             seen = s.seq;
             const el = field();
-            if (!el) { bar.textContent = 'PhoneKB: no text field found'; return; }
+            if (!el) {
+                const tags = new Set();
+                document.querySelectorAll('*').forEach((n) => {
+                    const t = n.tagName.toLowerCase();
+                    if (/search|text|input|keyboard/.test(t + ' ' + n.className)) tags.add(t + (n.className ? '.' + String(n.className).split(' ')[0] : ''));
+                });
+                bar.textContent = 'PhoneKB: no field. inputs=' + document.querySelectorAll('input').length +
+                    ' editable=' + document.querySelectorAll('[contenteditable]').length +
+                    ' url=' + location.pathname + ' tags=' + [...tags].slice(0, 8).join(' ');
+                seen = 0;
+                return;
+            }
             const setter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value').set;
             setter.call(el, s.text);
             el.dispatchEvent(new Event('input', { bubbles: true }));
